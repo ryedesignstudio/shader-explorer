@@ -1,0 +1,48 @@
+import { HexColorPicker, HexColorInput } from 'react-colorful';
+import type { ColorDefinition } from '../types';
+import './ColorPanel.css';
+
+interface ColorPanelProps {
+  colorDefinitions: ColorDefinition[];
+  values: Record<string, string>;
+  onChange: (colorKey: string, value: string) => void;
+  onReset: () => void;
+}
+
+export function ColorPanel({ colorDefinitions, values, onChange, onReset }: ColorPanelProps) {
+  return (
+    <div className="color-panel">
+      <div className="color-panel-header">
+        <h3>Colors</h3>
+        <button className="reset-btn" onClick={onReset}>
+          Reset
+        </button>
+      </div>
+      <div className="color-list">
+        {colorDefinitions.map((colorDef) => (
+          <div key={colorDef.key} className="color-item">
+            <div className="color-info">
+              <label>{colorDef.label}</label>
+              {colorDef.description && (
+                <span className="color-description">{colorDef.description}</span>
+              )}
+            </div>
+            <div className="color-picker-wrapper">
+              <HexColorPicker
+                color={values[colorDef.key] || colorDef.defaultValue}
+                onChange={(color) => onChange(colorDef.key, color)}
+              />
+              <div className="hex-input-wrapper">
+                <HexColorInput
+                  color={values[colorDef.key] || colorDef.defaultValue}
+                  onChange={(color) => onChange(colorDef.key, color)}
+                  prefixed
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

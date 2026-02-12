@@ -1,0 +1,97 @@
+.color-panel {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.color-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.color-panel-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.reset-btn {
+  background: #333;
+  border: none;
+  color: #aaa;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  background: #444;
+  color: #fff;
+}
+
+.color-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.color-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.color-info label {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.color-description {
+  color: #888;
+  font-size: 12px;
+}
+
+.color-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-picker-wrapper .react-colorful {
+  width: 100%;
+  height: 120px;
+}
+
+.hex-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.hex-input-wrapper input {
+  width: 100%;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.hex-input-wrapper input:focus {
+  outline: none;
+  border-color: #666;
+}
