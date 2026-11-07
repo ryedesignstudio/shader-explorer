@@ -7,9 +7,10 @@ interface ColorPanelProps {
   values: Record<string, string>;
   onChange: (colorKey: string, value: string) => void;
   onReset: () => void;
+  onExport: (format: 'png' | 'svg' | 'video') => void;
 }
 
-export function ColorPanel({ colorDefinitions, values, onChange, onReset }: ColorPanelProps) {
+export function ColorPanel({ colorDefinitions, values, onChange, onReset, onExport }: ColorPanelProps) {
   return (
     <div className="color-panel">
       <div className="color-panel-header">
@@ -17,6 +18,14 @@ export function ColorPanel({ colorDefinitions, values, onChange, onReset }: Colo
         <button className="reset-btn" onClick={onReset}>
           Reset
         </button>
+      </div>
+      <div className="export-section">
+        <span className="export-label">Download preview</span>
+        <div className="export-actions">
+          <button type="button" onClick={() => onExport('png')}>PNG</button>
+          <button type="button" onClick={() => onExport('svg')}>SVG</button>
+          <button type="button" onClick={() => onExport('video')}>Video</button>
+        </div>
       </div>
       <div className="color-list">
         {colorDefinitions.map((colorDef) => (

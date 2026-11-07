@@ -63,6 +63,51 @@ function App() {
     setError(error);
   }, []);
 
+  const handleExport = useCallback(async (format: 'png' | 'svg' | 'video') => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.shader-canvas-wrapper canvas');
+    if (!canvas) {
+      setError('The preview is not ready to export yet.');
+      return;
+    }
+
+    const download = (blob: Blob, filename: string) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    };
+
+    if (format === 'png') {
+      canvas.toBlob((blob) => {
+        if (blob) download(blob, `${selectedPreset.id}.png`);
+      }, 'image/png');
+      return;
+    }
+
+    if (format === 'svg') {
+      const image = canvas.toDataURL('image/png');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}"><image href="${image}" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" /></svg>`;
+      download(new Blob([svg], { type: 'image/svg+xml' }), `${selectedPreset.id}.svg`);
+      return;
+    }
+
+    if (!canvas.captureStream || !window.MediaRecorder) {
+      setError('Video export is not supported in this browser.');
+      return;
+    }
+
+    const chunks: Blob[] = [];
+    const recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: 'video/webm' });
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
+    };
+    recorder.onstop = () => download(new Blob(chunks, { type: 'video/webm' }), `${selectedPreset.id}.webm`);
+    recorder.start();
+    window.setTimeout(() => recorder.stop(), 5000);
+  }, [selectedPreset.id]);
+
   const currentColors = selectedPreset.colors.reduce(
     (acc, colorDef) => {
       acc[colorDef.key] = customColors[colorDef.key] || colorDef.defaultValue;
@@ -107,6 +152,7 @@ function App() {
           values={currentColors}
           onChange={handleColorChange}
           onReset={handleReset}
+          onExport={handleExport}
         />
       </aside>
 
@@ -135,6 +181,7 @@ function App() {
           values={currentColors}
           onChange={handleColorChange}
           onReset={handleReset}
+          onExport={handleExport}
         />
       </div>
     </div>
