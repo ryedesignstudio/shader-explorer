@@ -24,7 +24,7 @@ import {
 } from '@paper-design/shaders-react';
 import type { Preset } from '../types';
 
-const IMAGE_SRC = '/images/reference.jpeg';
+const IMAGE_SRC = `${import.meta.env.BASE_URL}images/reference.jpeg`;
 
 export const presets: Preset[] = [
   // ============================================================
