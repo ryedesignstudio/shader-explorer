@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import type { Category } from './types';
 import { getAll, getById } from './services/PresetRegistry';
 import { getStateFromURL, updateURL } from './services/URLStateManager';
@@ -64,8 +65,8 @@ function App() {
   }, []);
 
   const handleExport = useCallback(async (format: 'png' | 'svg' | 'video') => {
-    const canvas = document.querySelector<HTMLCanvasElement>('.shader-canvas-wrapper canvas');
-    if (!canvas) {
+    const target = document.querySelector<HTMLElement>('.app');
+    if (!target) {
       setError('The preview is not ready to export yet.');
       return;
     }
@@ -76,36 +77,52 @@ function App() {
       link.href = url;
       link.download = filename;
       link.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
-    if (format === 'png') {
-      canvas.toBlob((blob) => {
-        if (blob) download(blob, `${selectedPreset.id}.png`);
-      }, 'image/png');
-      return;
-    }
+    try {
+      const screenshot = await html2canvas(target, {
+        backgroundColor: '#0a0a0a',
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        scrollX: 0,
+        scrollY: window.scrollY,
+      });
 
-    if (format === 'svg') {
-      const image = canvas.toDataURL('image/png');
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}"><image href="${image}" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" /></svg>`;
-      download(new Blob([svg], { type: 'image/svg+xml' }), `${selectedPreset.id}.svg`);
-      return;
-    }
+      if (format === 'png') {
+        screenshot.toBlob((blob) => {
+          if (blob) download(blob, `${selectedPreset.id}.png`);
+        }, 'image/png');
+        return;
+      }
 
-    if (!canvas.captureStream || !window.MediaRecorder) {
-      setError('Video export is not supported in this browser.');
-      return;
-    }
+      const image = screenshot.toDataURL('image/png');
+      if (format === 'svg') {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${screenshot.width} ${screenshot.height}"><image href="${image}" width="100%" height="100%" /></svg>`;
+        download(new Blob([svg], { type: 'image/svg+xml' }), `${selectedPreset.id}.svg`);
+        return;
+      }
 
-    const chunks: Blob[] = [];
-    const recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: 'video/webm' });
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) chunks.push(event.data);
-    };
-    recorder.onstop = () => download(new Blob(chunks, { type: 'video/webm' }), `${selectedPreset.id}.webm`);
-    recorder.start();
-    window.setTimeout(() => recorder.stop(), 5000);
+      const stream = screenshot.captureStream(30);
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+      const chunks: Blob[] = [];
+      const recorder = new MediaRecorder(stream, { mimeType });
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+      recorder.onstop = () => download(new Blob(chunks, { type: mimeType }), `${selectedPreset.id}.webm`);
+      recorder.start();
+      window.setTimeout(() => recorder.stop(), 5000);
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : 'Unable to capture the current preview.');
+    }
   }, [selectedPreset.id]);
 
   const currentColors = selectedPreset.colors.reduce(
