@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://shader-explorer.vercel.app/sitemap.xml

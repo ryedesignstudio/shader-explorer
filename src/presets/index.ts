@@ -1,499 +1,361 @@
+import {
+  MeshGradient,
+  NeuroNoise,
+  DotOrbit,
+  Warp,
+  Voronoi,
+  SmokeRing,
+  GodRays,
+  Spiral,
+  Swirl,
+  Metaballs,
+  GrainGradient,
+  Dithering,
+  DotGrid,
+  Waves,
+  ColorPanels,
+  FlutedGlass,
+  ImageDithering,
+  HalftoneDots,
+  HalftoneCmyk,
+  Water,
+  Heatmap,
+  LiquidMetal,
+} from '@paper-design/shaders-react';
 import type { Preset } from '../types';
 
+const IMAGE_SRC = '/images/reference.jpeg';
+
 export const presets: Preset[] = [
-  // ABSTRACT
+  // ============================================================
+  // IMAGE FILTERS - Shaders that apply effects over an image
+  // ============================================================
   {
-    id: 'plasma',
-    name: 'Plasma',
-    description: 'Classic plasma effect with swirling colors',
-    category: 'abstract',
+    id: 'fluted-glass',
+    name: 'Fluted Glass',
+    description: 'Streaked ribbed glass distortion',
+    category: 'image-filters',
     colors: [
-      { key: 'color1', label: 'Primary', defaultValue: '#ff0066', description: 'First plasma color' },
-      { key: 'color2', label: 'Secondary', defaultValue: '#00ffcc', description: 'Second plasma color' },
-      { key: 'color3', label: 'Accent', defaultValue: '#6600ff', description: 'Third plasma color' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#f5f0eb' },
+      { key: 'colorShadow', label: 'Shadow', defaultValue: '#000000' },
+      { key: 'colorHighlight', label: 'Highlight', defaultValue: '#ffffff' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_color1;
-uniform vec3 u_color2;
-uniform vec3 u_color3;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time * 0.5;
-    float v1 = sin(uv.x * 10.0 + t);
-    float v2 = sin(10.0 * (uv.x * sin(t / 2.0) + uv.y * cos(t / 3.0)) + t);
-    float v3 = sin(sqrt(100.0 * ((uv.x - 0.5 + sin(t / 5.0)) * (uv.x - 0.5 + sin(t / 5.0)) + (uv.y - 0.5 + cos(t / 3.0)) * (uv.y - 0.5 + cos(t / 3.0))) + 1.0) + t);
-    float v = v1 + v2 + v3;
-    vec3 col = mix(u_color1, u_color2, sin(v * 3.14159) * 0.5 + 0.5);
-    col = mix(col, u_color3, sin(v * 3.14159 + 2.0) * 0.5 + 0.5);
-    float mouseDist = length(v_uv - u_mouse);
-    col += vec3(0.2) * smoothstep(0.3, 0.0, mouseDist);
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: FlutedGlass,
+    defaultProps: { image: IMAGE_SRC, distortion: 0.5, size: 0.3, angle: 0, blur: 0.3, edges: 0.3, shadows: 0.3, highlights: 0.15, shape: 'lines', distortionShape: 'prism', speed: 0.5 },
+    colorPropMap: { colorBack: 'colorBack', colorShadow: 'colorShadow', colorHighlight: 'colorHighlight' },
   },
   {
-    id: 'gradient-flow',
-    name: 'Gradient Flow',
-    description: 'Smooth animated gradient transitions',
-    category: 'abstract',
+    id: 'water',
+    name: 'Water',
+    description: 'Underwater caustic distortion',
+    category: 'image-filters',
     colors: [
-      { key: 'color1', label: 'Start Color', defaultValue: '#ff6b6b', description: 'Gradient start' },
-      { key: 'color2', label: 'End Color', defaultValue: '#4ecdc4', description: 'Gradient end' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#0a2540' },
+      { key: 'colorHighlight', label: 'Caustic', defaultValue: '#7ad1ff' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_color1;
-uniform vec3 u_color2;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time * 0.3;
-    float wave = sin(uv.x * 3.0 + t) * 0.1 + sin(uv.y * 2.0 - t * 0.7) * 0.1;
-    float gradient = uv.x + uv.y * 0.5 + wave;
-    gradient = fract(gradient + t * 0.1);
-    vec3 col = mix(u_color1, u_color2, smoothstep(0.0, 1.0, gradient));
-    float mouseDist = length(v_uv - u_mouse);
-    col = mix(col, u_color2, smoothstep(0.4, 0.0, mouseDist) * 0.5);
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: Water,
+    defaultProps: { image: IMAGE_SRC, highlights: 0.4, layering: 0.5, edges: 0.3, caustic: 0.5, waves: 0.3, size: 3, speed: 0.5 },
+    colorPropMap: { colorBack: 'colorBack', colorHighlight: 'colorHighlight' },
   },
   {
-    id: 'noise-field',
-    name: 'Noise Field',
-    description: 'Perlin noise visualization',
-    category: 'abstract',
+    id: 'halftone-dots',
+    name: 'Halftone Dots',
+    description: 'Classic halftone dot pattern filter',
+    category: 'image-filters',
     colors: [
-      { key: 'color1', label: 'Dark', defaultValue: '#1a1a2e', description: 'Dark areas' },
-      { key: 'color2', label: 'Light', defaultValue: '#eaf6ff', description: 'Light areas' },
+      { key: 'colorFront', label: 'Dots', defaultValue: '#1a1a1a' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#f5f0eb' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_color1;
-uniform vec3 u_color2;
-varying vec2 v_uv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-    vec2 i = floor(p); vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float fbm(vec2 p) {
-    float v = 0.0; float a = 0.5;
-    for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
-    return v;
-}
-void main() {
-    vec2 uv = v_uv * 4.0;
-    float t = u_time * 0.2;
-    float n = fbm(uv + t) + fbm(uv * 2.0 - t * 0.5) * 0.5;
-    float mouseDist = length(v_uv - u_mouse);
-    n += smoothstep(0.3, 0.0, mouseDist) * 0.3;
-    vec3 col = mix(u_color1, u_color2, n);
-    gl_FragColor = vec4(col, 1.0);
-}`,
-  },
-
-  // NATURE
-  {
-    id: 'aurora',
-    name: 'Aurora Borealis',
-    description: 'Flowing northern lights effect',
-    category: 'nature',
-    colors: [
-      { key: 'primary', label: 'Primary Glow', defaultValue: '#00ff88', description: 'Main aurora color' },
-      { key: 'secondary', label: 'Secondary Glow', defaultValue: '#0088ff', description: 'Accent color' },
-      { key: 'background', label: 'Sky', defaultValue: '#0a0a20', description: 'Background sky' },
-    ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_primary;
-uniform vec3 u_secondary;
-uniform vec3 u_background;
-varying vec2 v_uv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-    vec2 i = floor(p); vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time * 0.3;
-    float aurora = 0.0;
-    for (float i = 0.0; i < 3.0; i++) {
-        float offset = i * 0.15;
-        float wave = sin(uv.x * 3.0 + t + i) * 0.1;
-        float band = smoothstep(0.1, 0.0, abs(uv.y - 0.6 - offset - wave));
-        band *= noise(vec2(uv.x * 5.0 + t, i));
-        aurora += band;
-    }
-    vec3 auroraColor = mix(u_primary, u_secondary, sin(uv.x * 2.0 + t) * 0.5 + 0.5);
-    vec3 col = u_background + auroraColor * aurora;
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_primary * 0.3 * smoothstep(0.3, 0.0, mouseDist);
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: HalftoneDots,
+    defaultProps: { image: IMAGE_SRC, size: 0.15, radius: 1, contrast: 0.5, grid: 'hex', type: 'classic', originalColors: false, speed: 0 },
+    colorPropMap: { colorFront: 'colorFront', colorBack: 'colorBack' },
   },
   {
-    id: 'ocean-waves',
-    name: 'Ocean Waves',
-    description: 'Rippling water surface',
-    category: 'nature',
+    id: 'halftone-cmyk',
+    name: 'Halftone CMYK',
+    description: 'CMYK printing dot pattern',
+    category: 'image-filters',
     colors: [
-      { key: 'deep', label: 'Deep Water', defaultValue: '#003366', description: 'Deep ocean color' },
-      { key: 'surface', label: 'Surface', defaultValue: '#0099cc', description: 'Surface highlights' },
-      { key: 'foam', label: 'Foam', defaultValue: '#ffffff', description: 'Wave foam' },
+      { key: 'colorBack', label: 'Paper', defaultValue: '#f5f0eb' },
+      { key: 'colorC', label: 'Cyan', defaultValue: '#00aeef' },
+      { key: 'colorM', label: 'Magenta', defaultValue: '#ec008c' },
+      { key: 'colorY', label: 'Yellow', defaultValue: '#fff200' },
+      { key: 'colorK', label: 'Black', defaultValue: '#1a1a1a' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_deep;
-uniform vec3 u_surface;
-uniform vec3 u_foam;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time;
-    float wave1 = sin(uv.x * 8.0 + t * 2.0) * 0.02;
-    float wave2 = sin(uv.x * 12.0 - t * 1.5 + uv.y * 3.0) * 0.015;
-    float wave3 = sin(uv.x * 20.0 + t * 3.0) * 0.01;
-    float waves = wave1 + wave2 + wave3;
-    float depth = uv.y + waves;
-    vec3 col = mix(u_deep, u_surface, smoothstep(0.0, 1.0, depth));
-    float foam = smoothstep(0.02, 0.025, waves + 0.02);
-    col = mix(col, u_foam, foam * 0.5);
-    float mouseDist = length(v_uv - u_mouse);
-    float ripple = sin(mouseDist * 30.0 - t * 5.0) * smoothstep(0.3, 0.0, mouseDist);
-    col += u_foam * ripple * 0.2;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: HalftoneCmyk,
+    defaultProps: { image: IMAGE_SRC, size: 0.15, contrast: 0.5, softness: 0.1, type: 'dots', speed: 0 },
+    colorPropMap: { colorBack: 'colorBack', colorC: 'colorC', colorM: 'colorM', colorY: 'colorY', colorK: 'colorK' },
   },
   {
-    id: 'fire',
-    name: 'Fire',
-    description: 'Flame and fire effect',
-    category: 'nature',
+    id: 'image-dithering',
+    name: 'Image Dithering',
+    description: 'Retro dithered image effect',
+    category: 'image-filters',
     colors: [
-      { key: 'core', label: 'Core', defaultValue: '#ffff00', description: 'Hot center' },
-      { key: 'mid', label: 'Middle', defaultValue: '#ff6600', description: 'Mid flame' },
-      { key: 'outer', label: 'Outer', defaultValue: '#cc0000', description: 'Outer flame' },
+      { key: 'colorFront', label: 'Foreground', defaultValue: '#8b1a1a' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#f5f0eb' },
+      { key: 'colorHighlight', label: 'Highlight', defaultValue: '#cc6633' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_core;
-uniform vec3 u_mid;
-uniform vec3 u_outer;
-varying vec2 v_uv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-    vec2 i = floor(p); vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-void main() {
-    vec2 uv = v_uv;
-    uv.x = uv.x * 2.0 - 1.0;
-    float t = u_time * 2.0;
-    float fire = 0.0;
-    for (float i = 1.0; i < 4.0; i++) {
-        float n = noise(vec2(uv.x * 3.0 * i, uv.y * 5.0 - t * i * 0.5));
-        fire += n / i;
-    }
-    fire *= smoothstep(1.0, 0.3, abs(uv.x));
-    fire *= smoothstep(0.0, 0.5, uv.y);
-    fire *= smoothstep(1.0, 0.3, uv.y);
-    vec3 col = mix(u_outer, u_mid, fire);
-    col = mix(col, u_core, fire * fire);
-    col *= fire * 2.0;
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_core * smoothstep(0.2, 0.0, mouseDist) * 0.5;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: ImageDithering,
+    defaultProps: { image: IMAGE_SRC, type: '4x4', size: 2, colorSteps: 3, originalColors: false, speed: 0 },
+    colorPropMap: { colorFront: 'colorFront', colorBack: 'colorBack', colorHighlight: 'colorHighlight' },
+  },
+  // ============================================================
+  // LOGO ANIMATIONS - Shaders that animate logos/images
+  // ============================================================
+  {
+    id: 'heatmap',
+    name: 'Heatmap',
+    description: 'Glowing color gradient over image',
+    category: 'logo-animations',
+    colors: [
+      { key: 'color1', label: 'Heat 1', defaultValue: '#ff0000' },
+      { key: 'color2', label: 'Heat 2', defaultValue: '#ff8800' },
+      { key: 'color3', label: 'Heat 3', defaultValue: '#ffff00' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: Heatmap,
+    defaultProps: { image: IMAGE_SRC, contour: 0.5, angle: 45, noise: 0.3, innerGlow: 0.5, outerGlow: 0.3, speed: 0.5 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', colorBack: 'colorBack' },
   },
   {
-    id: 'sunset',
-    name: 'Sunset',
-    description: 'Gradient sky with sun glow',
-    category: 'nature',
+    id: 'liquid-metal',
+    name: 'Liquid Metal',
+    description: 'Futuristic liquid metal material',
+    category: 'logo-animations',
     colors: [
-      { key: 'sky', label: 'Sky', defaultValue: '#1a0533', description: 'Upper sky' },
-      { key: 'horizon', label: 'Horizon', defaultValue: '#ff6b35', description: 'Horizon glow' },
-      { key: 'sun', label: 'Sun', defaultValue: '#ffdd00', description: 'Sun color' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+      { key: 'colorTint', label: 'Tint', defaultValue: '#4488ff' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_sky;
-uniform vec3 u_horizon;
-uniform vec3 u_sun;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time * 0.1;
-    vec3 col = mix(u_horizon, u_sky, smoothstep(0.0, 0.8, uv.y));
-    vec2 sunPos = vec2(0.5 + sin(t) * 0.1, 0.3);
-    float sunDist = length(uv - sunPos);
-    float sun = smoothstep(0.15, 0.0, sunDist);
-    float glow = smoothstep(0.5, 0.0, sunDist) * 0.5;
-    col = mix(col, u_sun, sun);
-    col += u_sun * glow * 0.3;
-    col += u_horizon * smoothstep(0.8, 0.0, sunDist) * 0.2;
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_sun * 0.2 * smoothstep(0.2, 0.0, mouseDist);
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: LiquidMetal,
+    defaultProps: { image: IMAGE_SRC, repetition: 4, softness: 0.5, shiftRed: 0, shiftBlue: 0, contour: 0.5, distortion: 0.3, angle: 45, shape: 'circle', speed: 1 },
+    colorPropMap: { colorBack: 'colorBack', colorTint: 'colorTint' },
   },
 
-  // GEOMETRIC
+  // ============================================================
+  // EFFECTS - Standalone animated shader effects
+  // ============================================================
   {
-    id: 'grid-pulse',
-    name: 'Grid Pulse',
-    description: 'Pulsing grid lines',
-    category: 'geometric',
+    id: 'mesh-gradient',
+    name: 'Mesh Gradient',
+    description: 'Flowing organic color blend',
+    category: 'effects',
     colors: [
-      { key: 'background', label: 'Background', defaultValue: '#0a0a0a', description: 'Grid background' },
-      { key: 'lines', label: 'Lines', defaultValue: '#00ffff', description: 'Grid lines' },
+      { key: 'color1', label: 'Color 1', defaultValue: '#5100ff' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#00ff80' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#ffcc00' },
+      { key: 'color4', label: 'Color 4', defaultValue: '#ea00ff' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_background;
-uniform vec3 u_lines;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time;
-    float aspect = u_resolution.x / u_resolution.y;
-    vec2 grid = fract(uv * vec2(10.0 * aspect, 10.0));
-    float lines = smoothstep(0.05, 0.0, grid.x) + smoothstep(0.05, 0.0, grid.y);
-    lines = min(lines, 1.0);
-    float dist = length(uv - 0.5);
-    float pulse = sin(dist * 20.0 - t * 3.0) * 0.5 + 0.5;
-    pulse *= smoothstep(1.0, 0.0, dist);
-    vec3 col = u_background;
-    col += u_lines * lines * (0.3 + pulse * 0.7);
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_lines * smoothstep(0.15, 0.0, mouseDist) * 0.5;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: MeshGradient,
+    defaultProps: { distortion: 0.8, swirl: 0.1, speed: 0.4 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]' },
   },
   {
-    id: 'circles',
-    name: 'Concentric Circles',
-    description: 'Animated concentric circles',
-    category: 'geometric',
+    id: 'neuro-noise',
+    name: 'Neuro Noise',
+    description: 'Glowing web-like fractal structure',
+    category: 'effects',
     colors: [
-      { key: 'background', label: 'Background', defaultValue: '#1a1a2e', description: 'Background' },
-      { key: 'rings', label: 'Rings', defaultValue: '#e94560', description: 'Circle color' },
+      { key: 'colorFront', label: 'Highlight', defaultValue: '#ffffff' },
+      { key: 'colorMid', label: 'Main Color', defaultValue: '#47a6ff' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_background;
-uniform vec3 u_rings;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv - 0.5;
-    float aspect = u_resolution.x / u_resolution.y;
-    uv.x *= aspect;
-    float t = u_time;
-    float dist = length(uv);
-    float rings = sin(dist * 30.0 - t * 2.0);
-    rings = smoothstep(0.0, 0.1, rings);
-    vec3 col = mix(u_background, u_rings, rings * smoothstep(0.8, 0.0, dist));
-    vec2 mouseUV = v_uv - u_mouse;
-    mouseUV.x *= aspect;
-    float mouseDist = length(mouseUV);
-    float mouseRings = sin(mouseDist * 20.0 - t * 3.0);
-    mouseRings = smoothstep(0.0, 0.1, mouseRings) * smoothstep(0.4, 0.0, mouseDist);
-    col += u_rings * mouseRings * 0.5;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: NeuroNoise,
+    defaultProps: { brightness: 0.05, contrast: 0.3, speed: 1 },
+    colorPropMap: { colorFront: 'colorFront', colorMid: 'colorMid', colorBack: 'colorBack' },
+  },
+  {
+    id: 'grain-gradient',
+    name: 'Grain Gradient',
+    description: 'Noise-textured color gradient',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Color 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Color 4', defaultValue: '#33cc33' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: GrainGradient,
+    defaultProps: { softness: 0.5, intensity: 0.5, noise: 0.25, shape: 'corners', speed: 1 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]', colorBack: 'colorBack' },
+  },
+  {
+    id: 'god-rays',
+    name: 'God Rays',
+    description: 'Dramatic rays of light',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Ray 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Ray 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Ray 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Ray 4', defaultValue: '#33cc33' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+      { key: 'colorBloom', label: 'Bloom', defaultValue: '#0000ff' },
+    ],
+    component: GodRays,
+    defaultProps: { bloom: 0.4, intensity: 0.8, density: 0.3, spotty: 0.3, midSize: 0.2, midIntensity: 0.4, speed: 0.75, offsetY: -0.55 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]', colorBack: 'colorBack', colorBloom: 'colorBloom' },
+  },
+  {
+    id: 'smoke-ring',
+    name: 'Smoke Ring',
+    description: 'Radial smoky gradient',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Smoke Color', defaultValue: '#cc3333' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: SmokeRing,
+    defaultProps: { noiseScale: 3, noiseIterations: 8, radius: 0.25, thickness: 0.65, innerShape: 0.7, speed: 0.5, scale: 0.8 },
+    colorPropMap: { color1: 'colors[0]', colorBack: 'colorBack' },
+  },
+  {
+    id: 'warp',
+    name: 'Warp',
+    description: 'Animated warped color fields',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Color 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Color 4', defaultValue: '#33cc33' },
+    ],
+    component: Warp,
+    defaultProps: { proportion: 0.45, softness: 1, distortion: 0.25, swirl: 0.8, swirlIterations: 10, shape: 'checks', shapeScale: 0.1, speed: 1 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]' },
+  },
+  {
+    id: 'metaballs',
+    name: 'Metaballs',
+    description: 'Gooey merging organic blobs',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Color 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Color 4', defaultValue: '#33cc33' },
+      { key: 'color5', label: 'Color 5', defaultValue: '#33cc99' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: Metaballs,
+    defaultProps: { count: 10, size: 0.83, speed: 1 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]', color5: 'colors[4]', colorBack: 'colorBack' },
+  },
+  {
+    id: 'dithering',
+    name: 'Dithering',
+    description: 'Retro pixel dithering effect',
+    category: 'effects',
+    colors: [
+      { key: 'colorFront', label: 'Foreground', defaultValue: '#00b3ff' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: Dithering,
+    defaultProps: { shape: 'sphere', type: '4x4', size: 2, speed: 1, scale: 0.6 },
+    colorPropMap: { colorFront: 'colorFront', colorBack: 'colorBack' },
+  },
+  {
+    id: 'dot-orbit',
+    name: 'Dot Orbit',
+    description: 'Orbiting multi-color dot grid',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Color 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Color 4', defaultValue: '#33cc33' },
+      { key: 'color5', label: 'Color 5', defaultValue: '#33cc99' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: DotOrbit,
+    defaultProps: { stepsPerColor: 4, size: 1, sizeRange: 0, spreading: 1, speed: 1.5 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]', color5: 'colors[4]', colorBack: 'colorBack' },
+  },
+  {
+    id: 'dot-grid',
+    name: 'Dot Grid',
+    description: 'Static grid of shapes',
+    category: 'effects',
+    colors: [
+      { key: 'colorFill', label: 'Fill', defaultValue: '#ffffff' },
+      { key: 'colorStroke', label: 'Stroke', defaultValue: '#ffaa00' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
+    ],
+    component: DotGrid,
+    defaultProps: { size: 2, gapX: 32, gapY: 32, strokeWidth: 0, sizeRange: 0, opacityRange: 0, shape: 'circle' },
+    colorPropMap: { colorFill: 'colorFill', colorStroke: 'colorStroke', colorBack: 'colorBack' },
   },
   {
     id: 'voronoi',
     name: 'Voronoi',
-    description: 'Voronoi cell pattern',
-    category: 'geometric',
+    description: 'Animated Voronoi cell pattern',
+    category: 'effects',
     colors: [
-      { key: 'cells', label: 'Cells', defaultValue: '#2d3436', description: 'Cell fill' },
-      { key: 'edges', label: 'Edges', defaultValue: '#00cec9', description: 'Cell edges' },
+      { key: 'color1', label: 'Cell 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Cell 2', defaultValue: '#cc9933' },
+      { key: 'colorGlow', label: 'Glow', defaultValue: '#ffffff' },
+      { key: 'colorGap', label: 'Gap', defaultValue: '#2e0000' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_cells;
-uniform vec3 u_edges;
-varying vec2 v_uv;
-
-vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
-void main() {
-    vec2 uv = v_uv * 5.0;
-    float t = u_time * 0.5;
-    vec2 i = floor(uv);
-    vec2 f = fract(uv);
-    float minDist = 1.0;
-    float secondDist = 1.0;
-    for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-            vec2 neighbor = vec2(float(x), float(y));
-            vec2 point = hash2(i + neighbor);
-            point = 0.5 + 0.5 * sin(t + 6.2831 * point);
-            float d = length(neighbor + point - f);
-            if (d < minDist) { secondDist = minDist; minDist = d; }
-            else if (d < secondDist) { secondDist = d; }
-        }
-    }
-    float edge = secondDist - minDist;
-    vec3 col = mix(u_edges, u_cells, smoothstep(0.0, 0.05, edge));
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_edges * smoothstep(0.2, 0.0, mouseDist) * 0.3;
-    gl_FragColor = vec4(col, 1.0);
-}`,
-  },
-
-  // ANIMATED
-  {
-    id: 'starfield',
-    name: 'Starfield',
-    description: 'Twinkling stars with parallax',
-    category: 'animated',
-    colors: [
-      { key: 'background', label: 'Space', defaultValue: '#000011', description: 'Space background' },
-      { key: 'stars', label: 'Stars', defaultValue: '#ffffff', description: 'Star color' },
-    ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_background;
-uniform vec3 u_stars;
-varying vec2 v_uv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time;
-    vec3 col = u_background;
-    for (float layer = 1.0; layer < 4.0; layer++) {
-        vec2 starUV = uv * (20.0 + layer * 10.0);
-        starUV += vec2(t * layer * 0.02, 0.0);
-        vec2 id = floor(starUV);
-        vec2 f = fract(starUV) - 0.5;
-        float h = hash(id);
-        if (h > 0.8) {
-            float twinkle = sin(t * (2.0 + h * 3.0) + h * 6.28) * 0.5 + 0.5;
-            float star = smoothstep(0.1 / layer, 0.0, length(f));
-            col += u_stars * star * twinkle * (0.5 + 0.5 / layer);
-        }
-    }
-    float mouseDist = length(v_uv - u_mouse);
-    col += vec3(0.1, 0.05, 0.2) * smoothstep(0.3, 0.0, mouseDist);
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: Voronoi,
+    defaultProps: { stepsPerColor: 3, distortion: 0.4, gap: 0.04, glow: 0, speed: 0.5, scale: 0.5 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', colorGlow: 'colorGlow', colorGap: 'colorGap' },
   },
   {
-    id: 'matrix-rain',
-    name: 'Matrix Rain',
-    description: 'Digital rain effect',
-    category: 'animated',
+    id: 'waves',
+    name: 'Waves',
+    description: 'Configurable wave line pattern',
+    category: 'effects',
     colors: [
-      { key: 'background', label: 'Background', defaultValue: '#000000', description: 'Dark background' },
-      { key: 'rain', label: 'Rain', defaultValue: '#00ff00', description: 'Rain color' },
+      { key: 'colorFront', label: 'Foreground', defaultValue: '#ffbb00' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_background;
-uniform vec3 u_rain;
-varying vec2 v_uv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-void main() {
-    vec2 uv = v_uv;
-    float t = u_time;
-    vec3 col = u_background;
-    float columns = 30.0;
-    float colId = floor(uv.x * columns);
-    float colOffset = hash(vec2(colId, 0.0));
-    float speed = 0.5 + colOffset * 0.5;
-    float y = fract(uv.y + t * speed + colOffset);
-    float drop = smoothstep(0.0, 0.3, y) * smoothstep(1.0, 0.7, y);
-    float flicker = hash(vec2(colId, floor(t * 10.0)));
-    drop *= 0.5 + flicker * 0.5;
-    col += u_rain * drop * 0.8;
-    float head = smoothstep(0.02, 0.0, abs(y - 0.95));
-    col += u_rain * head * 2.0;
-    float mouseDist = length(v_uv - u_mouse);
-    col += u_rain * smoothstep(0.2, 0.0, mouseDist) * 0.3;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: Waves,
+    defaultProps: { frequency: 0.5, amplitude: 0.5, spacing: 1.2, proportion: 0.1, softness: 0, shape: 0, scale: 0.6 },
+    colorPropMap: { colorFront: 'colorFront', colorBack: 'colorBack' },
   },
   {
-    id: 'pulse',
-    name: 'Radial Pulse',
-    description: 'Radial pulse from center',
-    category: 'animated',
+    id: 'color-panels',
+    name: 'Color Panels',
+    description: 'Rotating translucent 3D panels',
+    category: 'effects',
     colors: [
-      { key: 'background', label: 'Background', defaultValue: '#0f0f23', description: 'Background' },
-      { key: 'pulse', label: 'Pulse', defaultValue: '#ff6b6b', description: 'Pulse color' },
-      { key: 'accent', label: 'Accent', defaultValue: '#4ecdc4', description: 'Secondary pulse' },
+      { key: 'color1', label: 'Panel 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Panel 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Panel 3', defaultValue: '#99cc33' },
+      { key: 'color4', label: 'Panel 4', defaultValue: '#33cc33' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#000000' },
     ],
-    fragmentShader: `precision mediump float;
-uniform float u_time;
-uniform vec2 u_mouse;
-uniform vec2 u_resolution;
-uniform vec3 u_background;
-uniform vec3 u_pulse;
-uniform vec3 u_accent;
-varying vec2 v_uv;
-
-void main() {
-    vec2 uv = v_uv - 0.5;
-    float aspect = u_resolution.x / u_resolution.y;
-    uv.x *= aspect;
-    float t = u_time;
-    float dist = length(uv);
-    float pulse1 = sin(dist * 15.0 - t * 3.0) * 0.5 + 0.5;
-    float pulse2 = sin(dist * 10.0 - t * 2.0 + 1.0) * 0.5 + 0.5;
-    pulse1 *= smoothstep(0.8, 0.0, dist);
-    pulse2 *= smoothstep(0.6, 0.0, dist);
-    vec3 col = u_background;
-    col += u_pulse * pulse1 * 0.6;
-    col += u_accent * pulse2 * 0.4;
-    col += u_pulse * smoothstep(0.2, 0.0, dist) * 0.5;
-    vec2 mouseUV = v_uv - u_mouse;
-    mouseUV.x *= aspect;
-    float mouseDist = length(mouseUV);
-    float mousePulse = sin(mouseDist * 20.0 - t * 4.0) * smoothstep(0.3, 0.0, mouseDist);
-    col += u_accent * mousePulse * 0.3;
-    gl_FragColor = vec4(col, 1.0);
-}`,
+    component: ColorPanels,
+    defaultProps: { density: 3, angle1: 0, angle2: 0, length: 1.1, edges: false, blur: 0, fadeIn: 1, fadeOut: 0.3, gradient: 0, speed: 0.5, scale: 0.8 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', color4: 'colors[3]', colorBack: 'colorBack' },
+  },
+  {
+    id: 'spiral',
+    name: 'Spiral',
+    description: 'Animated morphing spiral',
+    category: 'effects',
+    colors: [
+      { key: 'colorFront', label: 'Foreground', defaultValue: '#7ad1ff' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#001429' },
+    ],
+    component: Spiral,
+    defaultProps: { density: 1, distortion: 0, strokeWidth: 0.5, strokeTaper: 0, strokeCap: 0, noise: 0, noiseFrequency: 0, softness: 0, speed: 1 },
+    colorPropMap: { colorFront: 'colorFront', colorBack: 'colorBack' },
+  },
+  {
+    id: 'swirl',
+    name: 'Swirl',
+    description: 'Twisting color bands',
+    category: 'effects',
+    colors: [
+      { key: 'color1', label: 'Color 1', defaultValue: '#cc3333' },
+      { key: 'color2', label: 'Color 2', defaultValue: '#cc9933' },
+      { key: 'color3', label: 'Color 3', defaultValue: '#99cc33' },
+      { key: 'colorBack', label: 'Background', defaultValue: '#330000' },
+    ],
+    component: Swirl,
+    defaultProps: { bandCount: 4, twist: 0.1, center: 0.2, proportion: 0.5, softness: 0, noise: 0.2, noiseFrequency: 0.4, speed: 0.32 },
+    colorPropMap: { color1: 'colors[0]', color2: 'colors[1]', color3: 'colors[2]', colorBack: 'colorBack' },
   },
 ];

@@ -11,6 +11,46 @@ interface PresetGalleryProps {
   onCategoryChange: (category: Category) => void;
 }
 
+/** Build default props with default color values baked in */
+function buildDefaultPreviewProps(preset: Preset): Record<string, unknown> {
+  const props: Record<string, unknown> = { ...preset.defaultProps };
+  const colorsArray: Array<{ index: number; value: string }> = [];
+
+  for (const colorDef of preset.colors) {
+    const propPath = preset.colorPropMap[colorDef.key];
+    if (!propPath) continue;
+
+    const arrayMatch = propPath.match(/^colors\[(\d+)\]$/);
+    if (arrayMatch) {
+      colorsArray.push({ index: parseInt(arrayMatch[1], 10), value: colorDef.defaultValue });
+    } else {
+      props[propPath] = colorDef.defaultValue;
+    }
+  }
+
+  if (colorsArray.length > 0) {
+    colorsArray.sort((a, b) => a.index - b.index);
+    props.colors = colorsArray.map((c) => c.value);
+  }
+
+  return props;
+}
+
+function PresetThumbnail({ preset }: { preset: Preset }) {
+  const Component = preset.component;
+  const props = useMemo(() => buildDefaultPreviewProps(preset), [preset]);
+
+  return (
+    <div className="preset-thumbnail">
+      <Component
+        {...props}
+        speed={0}
+        style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+      />
+    </div>
+  );
+}
+
 export function PresetGallery({
   selectedId,
   categoryFilter,
@@ -25,34 +65,28 @@ export function PresetGallery({
 
   return (
     <div className="preset-gallery">
-      <div className="category-tabs">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={`category-tab ${categoryFilter === cat ? 'active' : ''}`}
-            onClick={() => onCategoryChange(cat)}
-          >
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </button>
-        ))}
+      <div className="gallery-top-row">
+        <div className="category-tabs">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={`category-tab ${categoryFilter === cat ? 'active' : ''}`}
+              onClick={() => onCategoryChange(cat)}
+            >
+              {cat === 'image-filters' ? 'Image Filters' : cat === 'logo-animations' ? 'Logo Animations' : cat === 'effects' ? 'Effects' : cat}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="preset-grid">
+      <div className="preset-scroll-row">
         {filteredPresets.map((preset) => (
           <button
             key={preset.id}
             className={`preset-card ${selectedId === preset.id ? 'selected' : ''}`}
             onClick={() => onSelect(preset.id)}
           >
-            <div
-              className="preset-thumbnail"
-              style={{
-                background: `linear-gradient(135deg, ${preset.colors[0]?.defaultValue || '#333'}, ${preset.colors[1]?.defaultValue || '#666'})`,
-              }}
-            />
-            <div className="preset-info">
-              <span className="preset-name">{preset.name}</span>
-              <span className="preset-category">{preset.category}</span>
-            </div>
+            <PresetThumbnail preset={preset} />
+            <span className="preset-name">{preset.name}</span>
           </button>
         ))}
       </div>

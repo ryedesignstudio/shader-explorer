@@ -14,10 +14,9 @@ export function getByCategory(category: Preset['category']): Preset[] {
 }
 
 export function getCategories(): Category[] {
-  return ['all', 'abstract', 'nature', 'geometric', 'animated'];
+  return ['effects', 'image-filters', 'logo-animations'];
 }
 
 export function filterByCategory(category: Category): Preset[] {
-  if (category === 'all') return presets;
   return presets.filter((p) => p.category === category);
 }

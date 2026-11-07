@@ -1,34 +1,27 @@
-import type * as THREE from 'three';
+import type { ComponentType } from 'react';
 
 export interface ColorDefinition {
   key: string;
   label: string;
-  defaultValue: string; // Hex color e.g. '#ff0000'
+  defaultValue: string;
   description?: string;
 }
 
+/** Each preset maps to a Paper Shader React component */
 export interface Preset {
   id: string;
   name: string;
   description: string;
-  category: 'abstract' | 'nature' | 'geometric' | 'animated';
+  category: 'effects' | 'image-filters' | 'logo-animations';
   colors: ColorDefinition[];
-  fragmentShader: string;
+  /** The Paper Shader React component */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentType<any>;
+  /** Default non-color props to pass to the component */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  defaultProps: Record<string, any>;
+  /** Maps color key -> prop name on the component */
+  colorPropMap: Record<string, string>;
 }
 
-export interface ShaderUniforms {
-  u_time: { value: number };
-  u_mouse: { value: THREE.Vector2 };
-  u_resolution: { value: THREE.Vector2 };
-  [key: string]: { value: THREE.Vector3 | THREE.Vector2 | number };
-}
-
-export const VERTEX_SHADER = `
-  varying vec2 v_uv;
-  void main() {
-    v_uv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-export type Category = Preset['category'] | 'all';
+export type Category = Preset['category'];
