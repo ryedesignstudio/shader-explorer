@@ -26,6 +26,7 @@ function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewCanvas, setPreviewCanvas] = useState<HTMLCanvasElement | null>(null);
 
   const selectedPreset = getById(selectedPresetId) || presets[0];
 
@@ -119,6 +120,7 @@ function App() {
               preset={selectedPreset}
               colors={currentColors}
               onError={handleError}
+              onCanvasReady={setPreviewCanvas}
             />
           </div>
         </section>
@@ -139,6 +141,7 @@ function App() {
         <ExportModal
           preset={selectedPreset}
           colors={currentColors}
+          canvas={previewCanvas}
           onClose={() => setIsExportOpen(false)}
         />
       )}

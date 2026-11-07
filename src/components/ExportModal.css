@@ -91,6 +91,21 @@
   background: #0077ee;
 }
 
+.export-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.export-format-actions {
+  flex-wrap: wrap;
+}
+
+.export-status {
+  color: #8ab4f8;
+  font-size: 13px;
+  margin: -6px 0 16px;
+}
+
 .code-preview {
   background: #0a0a0a;
   border-radius: 8px;

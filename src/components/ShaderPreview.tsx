@@ -8,9 +8,10 @@ interface ShaderPreviewProps {
   preset: Preset;
   colors: Record<string, string>;
   onError: (error: string | null) => void;
+  onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
 }
 
-export function ShaderPreview({ preset, colors, onError }: ShaderPreviewProps) {
+export function ShaderPreview({ preset, colors, onError, onCanvasReady }: ShaderPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
@@ -40,6 +41,7 @@ export function ShaderPreview({ preset, colors, onError }: ShaderPreviewProps) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
+    onCanvasReady?.(renderer.domElement);
 
     // Geometry
     const geometry = new THREE.PlaneGeometry(2, 2);
@@ -74,6 +76,7 @@ export function ShaderPreview({ preset, colors, onError }: ShaderPreviewProps) {
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+      onCanvasReady?.(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preset.id]); // Re-init when preset changes

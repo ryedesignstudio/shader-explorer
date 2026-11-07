@@ -6,12 +6,64 @@ import './ExportModal.css';
 interface ExportModalProps {
   preset: Preset;
   colors: Record<string, string>;
+  canvas: HTMLCanvasElement | null;
   onClose: () => void;
 }
 
-export function ExportModal({ preset, colors, onClose }: ExportModalProps) {
+export function ExportModal({ preset, colors, canvas, onClose }: ExportModalProps) {
   const [copied, setCopied] = useState(false);
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
   const code = generateExportCode(preset, colors);
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPng = () => {
+    if (!canvas) return;
+    canvas.toBlob((blob) => {
+      if (blob) downloadBlob(blob, `${preset.id}-shader.png`);
+    }, 'image/png');
+  };
+
+  const handleDownloadSvg = () => {
+    if (!canvas) return;
+    const image = canvas.toDataURL('image/png');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}"><image href="${image}" width="${canvas.width}" height="${canvas.height}"/></svg>`;
+    downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${preset.id}-shader.svg`);
+  };
+
+  const handleDownloadVideo = () => {
+    if (!canvas || !canvas.captureStream || typeof MediaRecorder === 'undefined') {
+      setVideoStatus('Video export is not supported in this browser.');
+      return;
+    }
+
+    const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+      .find((type) => MediaRecorder.isTypeSupported(type));
+    if (!mimeType) {
+      setVideoStatus('Video export is not supported in this browser.');
+      return;
+    }
+
+    const chunks: Blob[] = [];
+    const recorder = new MediaRecorder(canvas.captureStream(60), { mimeType });
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
+    };
+    recorder.onstop = () => {
+      downloadBlob(new Blob(chunks, { type: mimeType }), `${preset.id}-shader.webm`);
+      setVideoStatus('Video downloaded.');
+    };
+    setVideoStatus('Recording 5 seconds…');
+    recorder.start();
+    window.setTimeout(() => recorder.stop(), 5000);
+  };
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
@@ -19,7 +71,7 @@ export function ExportModal({ preset, colors, onClose }: ExportModalProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownloadHtml = () => {
     const colorUniforms = preset.colors
       .map((c) => {
         const hex = colors[c.key] || c.defaultValue;
@@ -107,13 +159,25 @@ export function ExportModal({ preset, colors, onClose }: ExportModalProps) {
         </div>
         <div className="export-content">
           <p className="export-description">
-            Copy the Three.js code or download as a standalone HTML file.
+            Export the current modified preview or download the editable shader source.
           </p>
-          <div className="export-actions">
-            <button className="export-btn primary" onClick={handleCopy}>
-              {copied ? '✓ Copied!' : 'Copy Code'}
+          <div className="export-actions export-format-actions">
+            <button className="export-btn primary" onClick={handleDownloadPng} disabled={!canvas}>
+              Download PNG
             </button>
-            <button className="export-btn" onClick={handleDownload}>
+            <button className="export-btn" onClick={handleDownloadSvg} disabled={!canvas}>
+              Download SVG
+            </button>
+            <button className="export-btn" onClick={handleDownloadVideo} disabled={!canvas}>
+              Download Video
+            </button>
+          </div>
+          {videoStatus && <p className="export-status" role="status">{videoStatus}</p>}
+          <div className="export-actions">
+            <button className="export-btn" onClick={handleCopy}>
+              {copied ? 'Copied!' : 'Copy Code'}
+            </button>
+            <button className="export-btn" onClick={handleDownloadHtml}>
               Download HTML
             </button>
           </div>
