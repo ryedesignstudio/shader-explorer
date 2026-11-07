@@ -55,41 +55,6 @@
   color: #fff;
 }
 
-.export-section {
-  padding: 14px 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.export-label {
-  display: block;
-  margin-bottom: 9px;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.export-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.export-actions button {
-  flex: 1;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 7px;
-  padding: 8px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.export-actions button:hover {
-  background: rgba(255, 255, 255, 0.13);
-}
-
 .color-list {
   display: flex;
   flex-direction: column;
